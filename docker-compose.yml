@@ -1,0 +1,47 @@
+services:
+  stream-rec-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stream-rec-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-12555}:12555"
+    environment:
+      TZ: Asia/Shanghai
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,::1,host.docker.internal,www.xiaohongshu.com,xiaohongshu.com,live-room.xiaohongshu.com,.xiaohongshu.com,live.xhscdn.com,live-play.xhscdn.com,live-source-play.xhscdn.com,live-source-play-bak-tx.xhscdn.com,.xhscdn.com}
+    volumes:
+      - ./runtime/db:/app/db
+      - ./runtime/output:/app/output
+      - ./config/backend.config.example.json:/app/config/config.json:ro
+
+  stream-rec-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: stream-rec-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-15281}:15275"
+    environment:
+      TZ: Asia/Shanghai
+      PORT: 15275
+      HOSTNAME: "0.0.0.0"
+      API_URL: http://stream-rec-backend:12555/api
+      NEXT_PUBLIC_API_URL: http://localhost:${BACKEND_PORT:-12555}/api
+      WS_API_URL: ws://stream-rec-backend:12555/live/update
+      NEXT_PUBLIC_WS_API_URL: ws://localhost:${BACKEND_PORT:-12555}/live/update
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:15281/}
+      NEXTAUTH_URL_INTERNAL: ${NEXTAUTH_URL:-http://localhost:15281/}
+      AUTH_URL: ${NEXTAUTH_URL:-http://localhost:15281/}
+      AUTH_SECRET: ${AUTH_SECRET:-change-me-before-real-use}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-before-real-use}
+      AUTH_TRUST_HOST: "true"
+    depends_on:
+      - stream-rec-backend
+
+# This compose file is included as a source-level migration aid.
+# The source machine's primary verified Xiaohongshu workflow was still:
+# frontend in Docker + backend on Windows host.

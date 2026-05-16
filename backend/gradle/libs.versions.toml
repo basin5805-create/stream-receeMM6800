@@ -1,0 +1,96 @@
+[versions]
+ktor = "3.0.0"
+ktor-test = "2.3.12"
+ksp = "2.0.21-1.0.25"
+kotlin = "2.0.21"
+kotlin-atomicfu = "0.25.0"
+kotlin-coroutines = "1.9.0"
+logback = "1.5.11"
+dagger = "2.52"
+protobuf = "4.28.2"
+androidx-room = "2.7.0-alpha10"
+androidx-sqlite = "2.5.0-alpha10"
+
+[libraries]
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidx-room" }
+androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "androidx-room" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
+androidx-sqlite = { group = "androidx.sqlite", name = "sqlite", version.ref = "androidx-sqlite" }
+androidx-sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "androidx-sqlite" }
+androidx-sqlite-framework = { group = "androidx.sqlite", name = "sqlite-framework", version.ref = "androidx-sqlite" }
+
+at-favre-lib-bcrypt = "at.favre.lib:bcrypt:0.10.2"
+
+io-exoquery-pprint = "io.exoquery:pprint-kotlin:2.0.2"
+
+io-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+io-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+io-ktor-client-java = { module = "io.ktor:ktor-client-java", version.ref = "ktor" }
+io-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+io-ktor-client-encoding = { module = "io.ktor:ktor-client-encoding", version.ref = "ktor" }
+io-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+io-ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+io-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+io-ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
+
+io-ktor-server-core-jvm = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+io-ktor-server-host-common-jvm = { module = "io.ktor:ktor-server-host-common-jvm", version.ref = "ktor" }
+io-ktor-server-status-pages-jvm = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
+io-ktor-server-auth-jvm = { module = "io.ktor:ktor-server-auth-jvm", version.ref = "ktor" }
+io-ktor-server-auth-jwt-jvm = { module = "io.ktor:ktor-server-auth-jwt-jvm", version.ref = "ktor" }
+io-ktor-server-cors-jvm = { module = "io.ktor:ktor-server-cors-jvm", version.ref = "ktor" }
+io-ktor-server-call-logging-jvm = { module = "io.ktor:ktor-server-call-logging-jvm", version.ref = "ktor" }
+io-ktor-server-call-id-jvm = { module = "io.ktor:ktor-server-call-id-jvm", version.ref = "ktor" }
+io-ktor-server-content-negotiation-jvm = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+io-ktor-serialization-kotlinx-json-jvm = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
+io-ktor-server-websockets-jvm = { module = "io.ktor:ktor-server-websockets-jvm", version.ref = "ktor" }
+io-ktor-server-netty-jvm = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+io-ktor-server-tests-jvm = { module = "io.ktor:ktor-server-tests-jvm", version.ref = "ktor-test" }
+
+io-lindstrom-m3u8-parser = "io.lindstrom:m3u8-parser:0.28"
+
+ch-qos-logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+org-jetbrains-kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+com-google-dagger-dagger = { module = "com.google.dagger:dagger", version.ref = "dagger" }
+com-google-dagger-dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "dagger" }
+
+com-google-protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
+com-google-protobuf-protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobuf" }
+com-google-protobuf-protobuf-kotlin-lite = { module = "com.google.protobuf:protobuf-kotlin-lite", version.ref = "protobuf" }
+
+
+me-tongfei-progressbar = "me.tongfei:progressbar:0.10.1"
+
+org-jetbrains-kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlin-atomicfu" }
+org-jetbrains-kotlinx-io = "org.jetbrains.kotlinx:kotlinx-io-core:0.5.4"
+org-jetbrains-kotlinx-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+org-jetbrains-kotlinx-datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.6.1"
+org-jetbrains-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
+org-jetbrains-kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "kotlin-coroutines" }
+org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin-coroutines" }
+org-jetbrains-kotlinx-serialization-json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3"
+org-jetbrains-kotlinx-serialization-protobuf = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.7.3"
+org-openjdk-nashorn-nashorn-core = "org.openjdk.nashorn:nashorn-core:15.4"
+
+org-junit-jupiter-junit-jupiter = "org.junit.jupiter:junit-jupiter:5.11.2"
+
+org-mockito-mockito-core = "org.mockito:mockito-core:5.14.2"
+
+[plugins]
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+room = { id = "androidx.room", version.ref = "androidx-room" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "kotlin-atomicfu" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+
+[bundles]
+
+test-jvm = [
+    "org-jetbrains-kotlinx-test",
+    "org-jetbrains-kotlinx-coroutines-debug",
+    "org-jetbrains-kotlinx-coroutines-test",
+    "org-mockito-mockito-core",
+    "org-junit-jupiter-junit-jupiter"
+]

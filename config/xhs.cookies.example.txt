@@ -1,0 +1,1 @@
+a1=YOUR_A1_COOKIE; web_session=YOUR_WEB_SESSION; webId=YOUR_WEB_ID; gid=YOUR_GID; xsecappid=xhs-pc-web

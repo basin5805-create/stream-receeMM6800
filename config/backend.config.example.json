@@ -1,0 +1,68 @@
+{
+    "id": 1,
+    "engine": "ffmpeg",
+    "danmu": false,
+    "outputFolder": "/app/output",
+    "outputFileName": "{streamer}-{title}-%Y-%m-%d %H:%M:%S",
+    "outputFileFormat": "flv",
+    "minPartSize": 20971520,
+    "maxPartSize": 2684354560,
+    "maxPartDuration": null,
+    "maxDownloadRetries": 3,
+    "downloadRetryDelay": 10,
+    "downloadCheckInterval": 60,
+    "maxConcurrentDownloads": 5,
+    "maxConcurrentUploads": 3,
+    "deleteFilesAfterUpload": false,
+    "useBuiltInSegmenter": false,
+    "exitDownloadOnError": false,
+    "enableFlvFix": false,
+    "enableFlvDuplicateTagFiltering": false,
+    "combineTsFiles": false,
+    "huyaConfig": {
+        "primaryCdn": "AL",
+        "maxBitRate": 10000,
+        "cookies": null,
+        "partedDownloadRetry": 10,
+        "sourceFormat": "flv",
+        "fetchDelay": 0,
+        "forceOrigin": false,
+        "useMobileApi": false
+    },
+    "douyinConfig": {
+        "cookies": null,
+        "quality": "origin",
+        "partedDownloadRetry": 10,
+        "sourceFormat": "flv",
+        "fetchDelay": 0
+    },
+    "douyuConfig": {
+        "cdn": "tct-h5",
+        "quality": 0,
+        "cookies": null,
+        "partedDownloadRetry": 10,
+        "fetchDelay": 0
+    },
+    "twitchConfig": {
+        "authToken": "",
+        "quality": "best",
+        "partedDownloadRetry": 10,
+        "cookies": null,
+        "fetchDelay": 30,
+        "skipAds": false,
+        "twitchProxyPlaylist": null,
+        "twitchProxyPlaylistExclude": null,
+        "twitchProxyPlaylistFallback": true
+    },
+    "pandaTvConfig": {
+        "partedDownloadRetry": 10,
+        "cookies": null,
+        "quality": "best",
+        "fetchDelay": 30
+    },
+    "xiaohongshuConfig": {
+        "cookies": null,
+        "partedDownloadRetry": 10,
+        "fetchDelay": 0
+    }
+}

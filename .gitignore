@@ -1,0 +1,62 @@
+# Root build outputs
+dist/
+build/
+out/
+.cache/
+
+# Frontend
+frontend/.next/
+frontend/node_modules/
+frontend/*.log
+
+# Backend
+backend/.gradle/
+backend/.kotlin/
+backend/**/build/
+backend/*.log
+backend/ffmpeg-build.tar.xz
+backend/rclone.zip
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Runtime data
+runtime/
+host/runtime/
+logs/
+*.db
+*.db-shm
+*.db-wal
+
+# Media / large outputs
+recordings/
+output/
+downloads/
+*.flv
+*.mp4
+*.ts
+*.mkv
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.tar.xz
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+config/*.local.*
+config/*.secret.*
+config/xhs.cookies.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml

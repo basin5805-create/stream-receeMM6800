@@ -1,0 +1,251 @@
+/*
+ * MIT License
+ *
+ * Stream-rec  https://github.com/hua0512/stream-rec
+ *
+ * Copyright (c) 2024 hua0512 (https://github.com/hua0512)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package github.hua0512.services
+
+import github.hua0512.app.App
+import github.hua0512.data.event.StreamerEvent.StreamerException
+import github.hua0512.data.event.StreamerEvent.StreamerRecordStop
+import github.hua0512.data.config.DownloadConfig
+import github.hua0512.data.stream.Streamer
+import github.hua0512.data.stream.StreamingPlatform
+import github.hua0512.plugins.download.base.IPlatformDownloaderFactory
+import github.hua0512.plugins.download.base.StreamerCallback
+import github.hua0512.plugins.download.fillDownloadConfig
+import github.hua0512.plugins.event.EventCenter
+import github.hua0512.utils.logger
+import io.ktor.util.collections.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.datetime.Clock
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentHashMap
+
+
+/**
+ * Download platform service, used to download streamers from the same platform
+ *
+ *
+ * @param app The application instance
+ * @param scope Coroutine scope to launch download jobs
+ * @param semaphore Semaphore to limit the number of concurrent downloads
+ * @param fetchDelay Delay between adding streamers
+ */
+class DownloadPlatformService(
+  val app: App,
+  private val scope: CoroutineScope,
+  private val fetchDelay: Long = 0,
+  private val semaphore: Semaphore,
+  private val callback: StreamerCallback,
+  private val platform: StreamingPlatform,
+  private val downloadFactory: IPlatformDownloaderFactory,
+) {
+
+  companion object {
+    @JvmStatic
+    private val logger: Logger = logger(DownloadPlatformService::class.java)
+
+    /**
+     * Maximum number of streamers permitted by the platform
+     * Used to limit the number of streamers to download
+     */
+    private const val MAX_STREAMERS = 500
+  }
+
+
+  private val streamers = mutableListOf<Streamer>()
+  private val cancelledStreamers = ConcurrentSet<String>()
+  private val downloadingStreamers = ConcurrentSet<String>()
+  private val managers = ConcurrentHashMap<String, StreamerDownloadService>()
+
+  /**
+   * Streamer channel with a capacity of MAX_STREAMERS
+   *
+   * This channel is used to add streamers to download
+   * The reason for using a channel is to control the flow of streamers, due to the delay between adding streamers.
+   * The platform fetchDelay is used to avoid launching multiple download jobs at the same time, or DDOSing the platform.
+   *
+   * @see MAX_STREAMERS
+   */
+  private val streamerChannel = Channel<Streamer>(MAX_STREAMERS)
+
+
+  init {
+    handleIntents()
+  }
+
+  /**
+   * Add streamer to download
+   * @param streamer the streamer to download
+   */
+  fun addStreamer(streamer: Streamer) {
+    // check if streamer is in cancelled list, if so remove it
+    if (streamer.url in cancelledStreamers) {
+      cancelledStreamers.remove(streamer.url)
+    }
+
+    // push streamer to channel
+    streamerChannel.trySend(streamer)
+    logger.debug("({}) added to channel: {}", platform, streamer.url)
+  }
+
+  /**
+   * Cancel streamer download
+   * @param streamer the streamer to cancel
+   */
+  suspend fun cancelStreamer(streamer: Streamer, reason: String? = null, newStreamer: Streamer) {
+    logger.debug("({}) request to cancel: {} reason: {}", platform, streamer.url, reason)
+    // check if streamer is present in the list
+    if (!streamers.contains(streamer) &&
+      !downloadingStreamers.contains(streamer.url) &&
+      !cancelledStreamers.contains(streamer.url)
+    ) {
+      logger.debug("({}) streamer {} not found in the list", platform, streamer.url)
+      return
+    }
+
+    cancelledStreamers.add(streamer.url)
+    logger.debug("({}), {} received cancellation signal : {}", platform, streamer.url, reason)
+    managers[streamer.url]?.cancelBlocking()
+
+    EventCenter.sendEvent(
+      StreamerRecordStop(
+        streamer.name,
+        streamer.url,
+        streamer.platform,
+        Clock.System.now(),
+        reason = CancellationException("Download cancelled : $reason")
+      )
+    )
+
+    // wait for the streamer to be removed from the list
+    // set a timeout of 10 seconds
+    withTimeoutOrNull(10_000) {
+      while (streamers.contains(streamer) || downloadingStreamers.contains(streamer.url)) {
+        delay(100)
+      }
+    }
+  }
+
+  /**
+   * Handle intents
+   */
+  private fun handleIntents() {
+    // collect streamers
+    streamerChannel.receiveAsFlow()
+      .onEach {
+        // check if streamer was cancelled before adding to state
+        if (cancelledStreamers.contains(it.url)) {
+          logger.debug("({}) streamer {} was cancelled before adding to state", it.platform, it.url)
+          return@onEach
+        }
+
+        // check if streamer is already in the list
+        // or is already being downloaded
+        if (streamers.contains(it) || downloadingStreamers.contains(it.url)) {
+          logger.debug("({}) streamer {} is already in the list", it.platform, it.url)
+          return@onEach
+        }
+
+        logger.debug("({}) adding streamer: {}, {}", it.platform, it.name, it.url)
+
+        streamers += it
+
+        startDownloadJob(it)
+        // delay before adding next streamer
+        delay(fetchDelay)
+      }.launchIn(scope)
+  }
+
+
+  private fun startDownloadJob(streamer: Streamer) {
+    scope.launch {
+      logger.debug("({}), {} launching download coroutine", streamer.platform, streamer.url)
+      downloadStreamer(streamer)
+    }
+  }
+
+  private suspend fun downloadStreamer(streamer: Streamer) = coroutineScope {
+    // check if streamer is already being downloaded
+    if (downloadingStreamers.contains(streamer.url)) {
+      logger.debug("({}) streamer {} is already being downloaded", platform, streamer.url)
+      return@coroutineScope
+    }
+
+    logger.debug("({}) downloading streamer: {}, {}", platform, streamer.name, streamer.url)
+
+    downloadingStreamers.add(streamer.url)
+
+    try {
+      // download streamer job
+      downloadStreamerInternal(streamer)
+    } finally {
+      streamers.remove(streamer)
+      downloadingStreamers.remove(streamer.url)
+      managers.remove(streamer.url)
+    }
+  }
+
+  private suspend fun downloadStreamerInternal(streamer: Streamer) {
+    val baseConfig = streamer.downloadConfig ?: DownloadConfig.DefaultDownloadConfig()
+    val newDownloadConfig = baseConfig.fillDownloadConfig(
+      streamer.platform,
+      streamer.templateStreamer?.downloadConfig,
+      app.config
+    )
+    val streamer = streamer.copy(downloadConfig = newDownloadConfig)
+    val plugin = try {
+      downloadFactory.createDownloader(app, streamer.platform, streamer.url)
+    } catch (e: Exception) {
+      logger.error("${streamer.name} platform not supported by the downloader : ${app.config.engine}, $e")
+      EventCenter.sendEvent(StreamerException(streamer.name, streamer.url, streamer.platform, Clock.System.now(), e))
+      return
+    }
+    val streamerDownloader = StreamerDownloadService(
+      app,
+      streamer,
+      plugin,
+      semaphore
+    ).apply {
+      init(callback)
+    }
+    managers[streamer.url] = streamerDownloader
+    // suspend here
+    streamerDownloader.start()
+  }
+
+  fun cancel() {
+    // send cancellation signal to all streamers
+    managers.forEach { (_, channel) ->
+      channel.cancel()
+    }
+    managers.clear()
+  }
+
+}

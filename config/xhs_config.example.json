@@ -1,0 +1,27 @@
+{
+    "id": 1,
+    "engine": "ffmpeg",
+    "danmu": false,
+    "outputFolder": "./output",
+    "outputFileName": "{streamer}-{title}-%Y-%m-%d %H:%M:%S",
+    "outputFileFormat": "flv",
+    "minPartSize": 1048576,
+    "maxPartSize": 2684354560,
+    "maxPartDuration": 1200,
+    "maxDownloadRetries": 3,
+    "downloadRetryDelay": 10,
+    "downloadCheckInterval": 60,
+    "maxConcurrentDownloads": 5,
+    "maxConcurrentUploads": 3,
+    "deleteFilesAfterUpload": false,
+    "useBuiltInSegmenter": false,
+    "exitDownloadOnError": false,
+    "enableFlvFix": false,
+    "enableFlvDuplicateTagFiltering": false,
+    "combineTsFiles": false,
+    "xiaohongshuConfig": {
+        "cookies": null,
+        "partedDownloadRetry": 10,
+        "fetchDelay": 0
+    }
+}

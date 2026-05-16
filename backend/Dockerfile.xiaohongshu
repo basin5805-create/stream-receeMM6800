@@ -1,0 +1,39 @@
+FROM gradle:8.8-jdk21-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN gradle stream-rec:build -x test
+
+FROM amazoncorretto:21-al2023-headless
+WORKDIR /app
+COPY --from=builder /app/stream-rec/build/libs/stream-rec.jar app.jar
+COPY scripts/xhs_live_room.py /app/scripts/xhs_live_room.py
+COPY vendor/xhshow /app/vendor/xhshow
+
+# Install dependencies
+RUN yum update -y && \
+    yum install -y unzip tar python3 python3-pip which xz tzdata findutils ca-certificates openssl-libs && \
+    pip3 install streamlink pycryptodome && \
+    yum clean all && \
+    rm -rf /var/cache/yum
+
+# Install ffmpeg from pre-downloaded archive
+COPY ffmpeg-build.tar.xz /tmp/ffmpeg-build.tar.xz
+RUN tar -xJf /tmp/ffmpeg-build.tar.xz -C /tmp && \
+    mv /tmp/ffmpeg-*-linux*/bin/{ffmpeg,ffprobe,ffplay} /usr/local/bin/ && \
+    chmod +x /usr/local/bin/{ffmpeg,ffprobe,ffplay} && \
+    rm -rf /tmp/ffmpeg-* /tmp/ffmpeg-build.tar.xz
+
+# Install rclone from pre-downloaded archive
+COPY rclone.zip /tmp/rclone.zip
+RUN unzip /tmp/rclone.zip -d /tmp && \
+    mv /tmp/rclone-*-linux*/rclone /usr/bin/ && \
+    chown root:root /usr/bin/rclone && \
+    chmod 755 /usr/bin/rclone && \
+    rm -rf /tmp/rclone.zip /tmp/rclone-*
+
+# Set timezone
+ENV TZ=${TZ:-Europe/Paris}
+
+EXPOSE 12555
+
+CMD ["java", "-jar", "app.jar"]
