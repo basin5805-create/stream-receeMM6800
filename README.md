@@ -161,9 +161,20 @@ This file shows:
 Read:
 
 - `docs/windows-migration-notes.md`
+- `docs/frontend-closure-check.md`
 
 This file lists:
 
 - what has only been validated on Windows
 - what is likely to break on Linux
 - which pieces depend on PowerShell, host networking, or Windows runtime assumptions
+
+## Frontend Completeness Check
+
+To verify that the packaged frontend still includes all local source dependencies, run:
+
+```bash
+node scripts/validate-frontend-closure.mjs
+```
+
+This is useful before doing Linux builds on another machine.
