@@ -38,7 +38,6 @@ output/
 downloads/
 *.flv
 *.mp4
-*.ts
 *.mkv
 *.zip
 *.7z
